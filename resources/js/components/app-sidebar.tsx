@@ -24,14 +24,9 @@ const mainNavItems: NavItem[] = [
                 icon: Users,
             },
             {
-                title: 'Roles',
-                href: '/roles',
+                title: 'Roles & Permissions',
+                href: '/admin/roles-permissions',
                 icon: Shield,
-            },
-            {
-                title: 'Permissions',
-                href: '/permissions',
-                icon: Key,
             },
         ],
     },

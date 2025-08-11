@@ -21,9 +21,11 @@ export default function ProductsIndex({ products, filters, categories }: any) {
                             Manage your product catalog, inventory, and pricing
                         </p>
                     </div>
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add New Product
+                    <Button asChild>
+                        <Link href="/products/create">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add New Product
+                        </Link>
                     </Button>
                 </div>
 

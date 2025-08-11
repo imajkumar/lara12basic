@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MoreHorizontal, Eye, Edit, Trash2, Package } from "lucide-react"
 import { Link } from "@inertiajs/react"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -149,9 +150,22 @@ export const columns: ColumnDef<Product>[] = [
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Product
+            <DropdownMenuItem asChild>
+              <ConfirmDialog
+                title="Delete Product"
+                description={`Are you sure you want to delete "${product.name}"? This action cannot be undone.`}
+                confirmText="Delete Product"
+                onConfirm={() => {
+                  // This would need to be handled by the parent component
+                  // For now, we'll just show the confirmation
+                  console.log('Delete product:', product.id);
+                }}
+              >
+                <div className="flex items-center text-destructive cursor-pointer">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Product
+                </div>
+              </ConfirmDialog>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
