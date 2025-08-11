@@ -11,6 +11,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
+    // User Management Routes
+    Route::prefix('users')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('users/index');
+        })->name('users.index');
+    });
+
+    Route::prefix('roles')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('roles/index');
+        })->name('roles.index');
+    });
+
+    Route::prefix('permissions')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('permissions/index');
+        })->name('permissions.index');
+    });
 });
 
 require __DIR__.'/settings.php';
