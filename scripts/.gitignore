@@ -1,0 +1,33 @@
+# Database Management Scripts .gitignore
+# This file ignores generated files and backups from database management scripts
+
+# Database backups
+dbbackup/
+*.sql
+*.sql.gz
+backup_summary.txt
+
+# Script logs and temporary files
+*.log
+*.tmp
+*.cache
+
+# Platform detection cache
+platform_cache.txt
+
+# Backup and restore temporary files
+restore_*.tmp
+backup_*.tmp
+
+# Script execution logs
+script_*.log
+backup_*.log
+restore_*.log
+
+# Database dumps (if any)
+*.dump
+*.backup
+
+# Temporary script files
+temp_*
+tmp_*
