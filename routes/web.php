@@ -17,6 +17,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', function () {
             return Inertia::render('users/index');
         })->name('users.index');
+        
+        Route::get('/{id}', function ($id) {
+            return Inertia::render('users/show');
+        })->name('users.show');
     });
 
     Route::prefix('roles')->group(function () {

@@ -3,15 +3,13 @@ import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Plus, Search, Filter, MoreHorizontal } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus } from 'lucide-react';
+import { DataTable } from '@/components/ui/data-table';
+import { columns, type User } from '@/components/users/columns';
 
 export default function UsersIndex() {
     // Mock data - replace with actual data from your backend
-    const users = [
+    const users: User[] = [
         {
             id: 1,
             name: 'John Doe',
@@ -20,7 +18,10 @@ export default function UsersIndex() {
             status: 'active',
             avatar: null,
             created_at: '2024-01-15',
-            last_login: '2024-01-20 10:30 AM'
+            last_login: '2024-01-20 10:30 AM',
+            phone: '+1 (555) 123-4567',
+            department: 'IT',
+            position: 'Senior Developer'
         },
         {
             id: 2,
@@ -30,7 +31,10 @@ export default function UsersIndex() {
             status: 'active',
             avatar: null,
             created_at: '2024-01-10',
-            last_login: '2024-01-19 02:15 PM'
+            last_login: '2024-01-19 02:15 PM',
+            phone: '+1 (555) 234-5678',
+            department: 'Marketing',
+            position: 'Marketing Manager'
         },
         {
             id: 3,
@@ -40,7 +44,10 @@ export default function UsersIndex() {
             status: 'inactive',
             avatar: null,
             created_at: '2024-01-05',
-            last_login: '2024-01-15 09:45 AM'
+            last_login: '2024-01-15 09:45 AM',
+            phone: '+1 (555) 345-6789',
+            department: 'Sales',
+            position: 'Sales Representative'
         },
         {
             id: 4,
@@ -50,7 +57,10 @@ export default function UsersIndex() {
             status: 'active',
             avatar: null,
             created_at: '2024-01-12',
-            last_login: '2024-01-20 11:20 AM'
+            last_login: '2024-01-20 11:20 AM',
+            phone: '+1 (555) 456-7890',
+            department: 'HR',
+            position: 'HR Manager'
         },
         {
             id: 5,
@@ -60,35 +70,51 @@ export default function UsersIndex() {
             status: 'active',
             avatar: null,
             created_at: '2024-01-08',
-            last_login: '2024-01-18 03:30 PM'
+            last_login: '2024-01-18 03:30 PM',
+            phone: '+1 (555) 567-8901',
+            department: 'Finance',
+            position: 'Financial Analyst'
+        },
+        {
+            id: 6,
+            name: 'Diana Prince',
+            email: 'diana.prince@example.com',
+            role: 'Super Admin',
+            status: 'active',
+            avatar: null,
+            created_at: '2024-01-01',
+            last_login: '2024-01-20 12:00 PM',
+            phone: '+1 (555) 678-9012',
+            department: 'Executive',
+            position: 'CEO'
+        },
+        {
+            id: 7,
+            name: 'Eve Adams',
+            email: 'eve.adams@example.com',
+            role: 'User',
+            status: 'suspended',
+            avatar: null,
+            created_at: '2024-01-03',
+            last_login: '2024-01-10 08:30 AM',
+            phone: '+1 (555) 789-0123',
+            department: 'Operations',
+            position: 'Operations Specialist'
+        },
+        {
+            id: 8,
+            name: 'Frank Miller',
+            email: 'frank.miller@example.com',
+            role: 'Manager',
+            status: 'active',
+            avatar: null,
+            created_at: '2024-01-07',
+            last_login: '2024-01-19 04:45 PM',
+            phone: '+1 (555) 890-1234',
+            department: 'Engineering',
+            position: 'Engineering Manager'
         }
     ];
-
-    const getStatusBadgeVariant = (status: string) => {
-        switch (status) {
-            case 'active':
-                return 'default';
-            case 'inactive':
-                return 'secondary';
-            case 'suspended':
-                return 'destructive';
-            default:
-                return 'outline';
-        }
-    };
-
-    const getRoleBadgeVariant = (role: string) => {
-        switch (role) {
-            case 'Admin':
-                return 'destructive';
-            case 'Manager':
-                return 'default';
-            case 'User':
-                return 'secondary';
-            default:
-                return 'outline';
-        }
-    };
 
     return (
         <AppLayout>
@@ -109,98 +135,24 @@ export default function UsersIndex() {
                     </Button>
                 </div>
 
-                {/* Filters and Search */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Search & Filters</CardTitle>
-                        <CardDescription>
-                            Find users by name, email, role, or status
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search users..."
-                                    className="pl-10"
-                                />
-                            </div>
-                            <Select>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All Roles" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Roles</SelectItem>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                    <SelectItem value="manager">Manager</SelectItem>
-                                    <SelectItem value="user">User</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Select>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="inactive">Inactive</SelectItem>
-                                    <SelectItem value="suspended">Suspended</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Button variant="outline" className="w-full">
-                                <Filter className="mr-2 h-4 w-4" />
-                                Apply Filters
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Users List */}
+                {/* Users Table */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Users ({users.length})</CardTitle>
                         <CardDescription>
-                            List of all registered users in the system
+                            All registered users in the system with their roles and status
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            {users.map((user) => (
-                                <div
-                                    key={user.id}
-                                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                                >
-                                    <div className="flex items-center space-x-4">
-                                        <Avatar>
-                                            <AvatarImage src={user.avatar || undefined} />
-                                            <AvatarFallback>
-                                                {user.name.split(' ').map(n => n[0]).join('')}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <h3 className="font-medium">{user.name}</h3>
-                                            <p className="text-sm text-muted-foreground">{user.email}</p>
-                                            <div className="flex items-center space-x-2 mt-1">
-                                                <Badge variant={getRoleBadgeVariant(user.role)}>
-                                                    {user.role}
-                                                </Badge>
-                                                <Badge variant={getStatusBadgeVariant(user.status)}>
-                                                    {user.status}
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right text-sm text-muted-foreground">
-                                        <div>Created: {user.created_at}</div>
-                                        <div>Last login: {user.last_login}</div>
-                                    </div>
-                                    <Button variant="ghost" size="sm">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
+                        <DataTable 
+                            columns={columns} 
+                            data={users} 
+                            searchKey="name"
+                            searchPlaceholder="Search users by name..."
+                            showColumnVisibility={true}
+                            showPagination={true}
+                            pageSize={10}
+                        />
                     </CardContent>
                 </Card>
             </div>
