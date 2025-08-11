@@ -1,13 +1,98 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Package } from 'lucide-react';
+import { Plus, Package, Filter, Search } from 'lucide-react';
 import { DataTable } from '@/components/ui/data-table';
 import { columns, type Product } from '@/components/products/columns';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { useState, useMemo } from 'react';
 
-export default function ProductsIndex({ products, filters, categories }: any) {
+interface Props {
+    products: {
+        data: Product[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number;
+        to: number;
+    };
+    filters: {
+        search?: string;
+        category?: string;
+        status?: string;
+        brand?: string;
+        price_min?: string;
+        price_max?: string;
+        stock_min?: string;
+        stock_max?: string;
+    };
+    categories: string[];
+    brands: string[];
+}
+
+export default function ProductsIndex({ products, filters, categories, brands }: Props) {
+    const [localFilters, setLocalFilters] = useState({
+        search: filters.search || '',
+        category: filters.category || '',
+        status: filters.status || '',
+        brand: filters.brand || '',
+        price_min: filters.price_min || '',
+        price_max: filters.price_max || '',
+        stock_min: filters.stock_min || '',
+        stock_max: filters.stock_max || '',
+    });
+
+    // Filter products locally for better UX
+    const filteredProducts = useMemo(() => {
+        return products.data.filter(product => {
+            const matchesSearch = !localFilters.search || 
+                product.name.toLowerCase().includes(localFilters.search.toLowerCase()) ||
+                product.sku.toLowerCase().includes(localFilters.search.toLowerCase()) ||
+                (product.description && product.description.toLowerCase().includes(localFilters.search.toLowerCase()));
+            
+            const matchesCategory = !localFilters.category || product.category === localFilters.category;
+            const matchesStatus = !localFilters.status || 
+                (localFilters.status === 'active' && product.is_active) ||
+                (localFilters.status === 'inactive' && !product.is_active);
+            const matchesBrand = !localFilters.brand || product.brand === localFilters.brand;
+            
+            const price = parseFloat(product.price);
+            const matchesPriceMin = !localFilters.price_min || price >= parseFloat(localFilters.price_min);
+            const matchesPriceMax = !localFilters.price_max || price <= parseFloat(localFilters.price_max);
+            
+            const stock = product.stock;
+            const matchesStockMin = !localFilters.stock_min || stock >= parseInt(localFilters.stock_min);
+            const matchesStockMax = !localFilters.stock_max || stock <= parseInt(localFilters.stock_max);
+            
+            return matchesSearch && matchesCategory && matchesStatus && matchesBrand && 
+                   matchesPriceMin && matchesPriceMax && matchesStockMin && matchesStockMax;
+        });
+    }, [products.data, localFilters]);
+
+    const handleFilterChange = (key: string, value: string) => {
+        setLocalFilters(prev => ({ ...prev, [key]: value }));
+    };
+
+    const clearFilters = () => {
+        setLocalFilters({
+            search: '',
+            category: '',
+            status: '',
+            brand: '',
+            price_min: '',
+            price_max: '',
+            stock_min: '',
+            stock_max: '',
+        });
+    };
+
+    const activeFiltersCount = Object.values(localFilters).filter(v => v !== '').length;
+
     return (
         <AppLayout>
             <Head title="Products Management" />
@@ -29,12 +114,148 @@ export default function ProductsIndex({ products, filters, categories }: any) {
                     </Button>
                 </div>
 
+                {/* Filters */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center">
+                            <Filter className="mr-2 h-5 w-5" />
+                            Filters
+                            {activeFiltersCount > 0 && (
+                                <Badge variant="secondary" className="ml-2">
+                                    {activeFiltersCount} active
+                                </Badge>
+                            )}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Search */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Search</label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Name, SKU, description..."
+                                        value={localFilters.search}
+                                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Category */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Category</label>
+                                <Select value={localFilters.category} onValueChange={(value) => handleFilterChange('category', value)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="All categories" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="">All categories</SelectItem>
+                                        {categories.map((category) => (
+                                            <SelectItem key={category} value={category}>
+                                                {category}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Brand */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Brand</label>
+                                <Select value={localFilters.brand} onValueChange={(value) => handleFilterChange('brand', value)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="All brands" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="">All brands</SelectItem>
+                                        {brands.map((brand) => (
+                                            <SelectItem key={brand} value={brand}>
+                                                {brand}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Status */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Status</label>
+                                <Select value={localFilters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="All statuses" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="">All statuses</SelectItem>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Price Range */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Price Range</label>
+                                <div className="flex space-x-2">
+                                    <Input
+                                        placeholder="Min"
+                                        type="number"
+                                        step="0.01"
+                                        value={localFilters.price_min}
+                                        onChange={(e) => handleFilterChange('price_min', e.target.value)}
+                                    />
+                                    <Input
+                                        placeholder="Max"
+                                        type="number"
+                                        step="0.01"
+                                        value={localFilters.price_max}
+                                        onChange={(e) => handleFilterChange('price_max', e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Stock Range */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Stock Range</label>
+                                <div className="flex space-x-2">
+                                    <Input
+                                        placeholder="Min"
+                                        type="number"
+                                        value={localFilters.stock_min}
+                                        onChange={(e) => handleFilterChange('stock_min', e.target.value)}
+                                    />
+                                    <Input
+                                        placeholder="Max"
+                                        type="number"
+                                        value={localFilters.stock_max}
+                                        onChange={(e) => handleFilterChange('stock_max', e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Clear Filters */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">&nbsp;</label>
+                                <Button 
+                                    variant="outline" 
+                                    onClick={clearFilters}
+                                    className="w-full"
+                                    disabled={activeFiltersCount === 0}
+                                >
+                                    Clear Filters
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
                 {/* Products Table */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center">
                             <Package className="mr-2 h-5 w-5" />
-                            Products ({products.total})
+                            Products ({filteredProducts.length} of {products.total})
                         </CardTitle>
                         <CardDescription>
                             All products in your catalog with inventory and pricing information
@@ -43,12 +264,12 @@ export default function ProductsIndex({ products, filters, categories }: any) {
                     <CardContent>
                         <DataTable 
                             columns={columns} 
-                            data={products.data} 
+                            data={filteredProducts} 
                             searchKey="name"
                             searchPlaceholder="Search products by name, SKU, or category..."
                             showColumnVisibility={true}
-                            showPagination={true}
-                            pageSize={10}
+                            showPagination={false} // We're handling pagination with filters
+                            pageSize={filteredProducts.length}
                         />
                     </CardContent>
                 </Card>

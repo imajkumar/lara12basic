@@ -161,6 +161,12 @@ class EmailTemplateController extends Controller
         $testData = $request->input('test_data', []);
         
         try {
+            // Generate test data based on template variables
+            $testData = $this->generateTestData($template);
+            
+            // Create a temporary view with the template content
+            $viewContent = $this->createTemporaryView($template, $testData);
+            
             $beautymail = app()->make(Beautymail::class);
             $beautymail->send('emails.dynamic', $testData, function($message) use ($template, $testData) {
                 $message
@@ -173,6 +179,66 @@ class EmailTemplateController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to send test email: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Generate test data for email templates
+     */
+    private function generateTestData($template)
+    {
+        $testData = [
+            'user_name' => 'John Doe',
+            'user_email' => 'john.doe@example.com',
+            'company_name' => 'GoERP',
+            'login_url' => 'http://localhost/login',
+            'reset_url' => 'http://localhost/reset-password?token=test123',
+            'verification_url' => 'http://localhost/verify-email?token=test123',
+            'expires_in' => 60,
+            'notification_title' => 'System Maintenance',
+            'notification_message' => 'Scheduled maintenance will occur on Sunday at 2 AM.',
+            'additional_info' => 'This maintenance is expected to last 2 hours.',
+            'invoice_number' => 'INV-2024-001',
+            'amount' => '$299.99',
+            'due_date' => '2024-12-31',
+            'status' => 'Pending',
+            'updated_fields' => 'Email address, Phone number',
+            'account_url' => 'http://localhost/profile',
+            'new_features' => 'Enhanced dashboard with analytics',
+            'system_updates' => 'Performance improvements and bug fixes',
+            'announcements' => 'New mobile app coming soon!',
+            'dashboard_url' => 'http://localhost/dashboard',
+            'test_email' => 'test@example.com',
+        ];
+
+        // Only return variables that are actually used in the template
+        $usedVariables = $template->variables ?? [];
+        $filteredData = [];
+
+        foreach ($usedVariables as $variable) {
+            if (isset($testData[$variable])) {
+                $filteredData[$variable] = $testData[$variable];
+            }
+        }
+
+        // Always include test_email
+        $filteredData['test_email'] = $testData['test_email'];
+
+        return $filteredData;
+    }
+
+    /**
+     * Create a temporary view for the email template
+     */
+    private function createTemporaryView($template, $data)
+    {
+        // Replace variables in the content
+        $processedContent = $this->replaceVariables($template->content, $data);
+        
+        // Create a temporary view file
+        $viewPath = storage_path('app/temp_email_' . $template->id . '.blade.php');
+        file_put_contents($viewPath, $processedContent);
+        
+        return $viewPath;
     }
 
     /**

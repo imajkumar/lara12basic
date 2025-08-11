@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolesAndPermissionsSeeder::class,
             DefaultEmailTemplatesSeeder::class,
+            SampleProductsSeeder::class,
         ]);
     }
 }

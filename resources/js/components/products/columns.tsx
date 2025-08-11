@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Eye, Edit, Trash2, Package } from "lucide-react"
+import { MoreHorizontal, Eye, Edit, Trash2, Package, TrendingUp, TrendingDown } from "lucide-react"
 import { Link } from "@inertiajs/react"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
@@ -32,6 +32,8 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "name",
     header: "Product",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const product = row.original
       return (
@@ -42,6 +44,11 @@ export const columns: ColumnDef<Product>[] = [
           <div>
             <div className="font-medium">{product.name}</div>
             <div className="text-sm text-muted-foreground">{product.sku}</div>
+            {product.description && (
+              <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                {product.description}
+              </div>
+            )}
           </div>
         </div>
       )
@@ -50,6 +57,8 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "category",
     header: "Category",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const category = row.getValue("category") as string
       return category ? (
@@ -62,14 +71,22 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "brand",
     header: "Brand",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const brand = row.getValue("brand") as string
-      return brand || <span className="text-muted-foreground">-</span>
+      return brand ? (
+        <Badge variant="secondary">{brand}</Badge>
+      ) : (
+        <span className="text-muted-foreground">-</span>
+      )
     },
   },
   {
     accessorKey: "price",
     header: "Price",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const price = parseFloat(row.getValue("price"))
       const formatted = new Intl.NumberFormat("en-US", {
@@ -82,23 +99,39 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "stock",
     header: "Stock",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const stock = row.getValue("stock") as number
       const getStockBadgeVariant = (stock: number) => {
         if (stock === 0) return 'destructive'
         if (stock < 10) return 'secondary'
+        if (stock < 50) return 'default'
         return 'default'
       }
+      
+      const getStockIcon = (stock: number) => {
+        if (stock === 0) return null
+        if (stock < 10) return <TrendingDown className="h-3 w-3 text-orange-500" />
+        if (stock > 100) return <TrendingUp className="h-3 w-3 text-green-500" />
+        return null
+      }
+      
       return (
-        <Badge variant={getStockBadgeVariant(stock)}>
-          {stock} units
-        </Badge>
+        <div className="flex items-center space-x-2">
+          <Badge variant={getStockBadgeVariant(stock)}>
+            {stock} units
+          </Badge>
+          {getStockIcon(stock)}
+        </div>
       )
     },
   },
   {
     accessorKey: "is_active",
     header: "Status",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const isActive = row.getValue("is_active") as boolean
       return (
@@ -111,11 +144,16 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "created_at",
     header: "Created",
+    enableSorting: true,
+    enableColumnFilter: false,
     cell: ({ row }) => {
       const date = new Date(row.getValue("created_at"))
       return (
         <div className="text-sm">
-          {date.toLocaleDateString()}
+          <div>{date.toLocaleDateString()}</div>
+          <div className="text-xs text-muted-foreground">
+            {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
         </div>
       )
     },
@@ -123,6 +161,8 @@ export const columns: ColumnDef<Product>[] = [
   {
     id: "actions",
     header: "Actions",
+    enableSorting: false,
+    enableColumnFilter: false,
     cell: ({ row }) => {
       const product = row.original
 

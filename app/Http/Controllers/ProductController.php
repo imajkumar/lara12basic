@@ -21,26 +21,42 @@ class ProductController extends Controller
             ->when(request('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                       ->orWhere('sku', 'like', "%{$search}%")
-                      ->orWhere('category', 'like', "%{$search}%");
+                      ->orWhere('description', 'like', "%{$search}%");
             })
             ->when(request('category'), function ($query, $category) {
                 $query->where('category', $category);
             })
+            ->when(request('brand'), function ($query, $brand) {
+                $query->where('brand', $brand);
+            })
             ->when(request('status'), function ($query, $status) {
                 if ($status === 'active') {
-                    $query->active();
+                    $query->where('is_active', true);
                 } elseif ($status === 'inactive') {
                     $query->where('is_active', false);
                 }
             })
+            ->when(request('price_min'), function ($query, $price) {
+                $query->where('price', '>=', $price);
+            })
+            ->when(request('price_max'), function ($query, $price) {
+                $query->where('price', '<=', $price);
+            })
+            ->when(request('stock_min'), function ($query, $stock) {
+                $query->where('stock', '>=', $stock);
+            })
+            ->when(request('stock_max'), function ($query, $stock) {
+                $query->where('stock', '<=', $stock);
+            })
             ->orderBy('created_at', 'desc')
-            ->paginate(10)
+            ->paginate(50) // Increased page size for better filtering
             ->withQueryString();
 
         return Inertia::render('products/index', [
             'products' => $products,
-            'filters' => request()->only(['search', 'category', 'status']),
+            'filters' => request()->only(['search', 'category', 'status', 'brand', 'price_min', 'price_max', 'stock_min', 'stock_max']),
             'categories' => Product::distinct()->pluck('category')->filter()->values(),
+            'brands' => Product::distinct()->pluck('brand')->filter()->values(),
         ]);
     }
 
