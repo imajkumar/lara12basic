@@ -57,6 +57,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{id}', [App\Http\Controllers\ProductController::class, 'update'])->name('products.update');
         Route::delete('/{id}', [App\Http\Controllers\ProductController::class, 'destroy'])->name('products.destroy');
     });
+
+    // Email Template Management Routes
+    Route::prefix('email-templates')->group(function () {
+        Route::get('/', [App\Http\Controllers\EmailTemplateController::class, 'index'])->name('email-templates.index');
+        Route::get('/create', [App\Http\Controllers\EmailTemplateController::class, 'create'])->name('email-templates.create');
+        Route::post('/', [App\Http\Controllers\EmailTemplateController::class, 'store'])->name('email-templates.store');
+        Route::get('/{id}', [App\Http\Controllers\EmailTemplateController::class, 'show'])->name('email-templates.show');
+        Route::get('/{id}/edit', [App\Http\Controllers\EmailTemplateController::class, 'edit'])->name('email-templates.edit');
+        Route::put('/{id}', [App\Http\Controllers\EmailTemplateController::class, 'update'])->name('email-templates.update');
+        Route::delete('/{id}', [App\Http\Controllers\EmailTemplateController::class, 'destroy'])->name('email-templates.destroy');
+        Route::post('/{id}/test', [App\Http\Controllers\EmailTemplateController::class, 'sendTest'])->name('email-templates.test');
+    });
 });
 
 require __DIR__.'/settings.php';

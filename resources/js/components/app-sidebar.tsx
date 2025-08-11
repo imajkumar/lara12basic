@@ -47,6 +47,23 @@ const mainNavItems: NavItem[] = [
             },
         ],
     },
+    {
+        title: 'Email Management',
+        href: '/email-templates',
+        icon: Mail,
+        children: [
+            {
+                title: 'Email Templates',
+                href: '/email-templates',
+                icon: Mail,
+            },
+            {
+                title: 'Create Template',
+                href: '/email-templates/create',
+                icon: Mail,
+            },
+        ],
+    },
 ];
 
 const footerNavItems: NavItem[] = [
