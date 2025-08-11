@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users, Shield, Key } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Users, Shield, Key, Package } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -32,6 +32,23 @@ const mainNavItems: NavItem[] = [
                 title: 'Permissions',
                 href: '/permissions',
                 icon: Key,
+            },
+        ],
+    },
+    {
+        title: 'Product Management',
+        href: '/products',
+        icon: Package,
+        children: [
+            {
+                title: 'Products List',
+                href: '/products',
+                icon: Package,
+            },
+            {
+                title: 'Add Product',
+                href: '/products/create',
+                icon: Package,
             },
         ],
     },
