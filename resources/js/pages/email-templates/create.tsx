@@ -78,8 +78,9 @@ ${data.content}
     };
 
     const addVariable = (variable: string) => {
-        if (!data.variables.includes(variable)) {
-            setData('variables', [...data.variables, variable]);
+        const currentVariables = data.variables || [];
+        if (!currentVariables.includes(variable)) {
+            setData('variables', [...currentVariables, variable]);
         }
     };
 
@@ -265,12 +266,15 @@ ${data.content}
                                 <div className="mt-3">
                                     <Label>Selected Variables:</Label>
                                     <div className="flex flex-wrap gap-2 mt-2">
-                                        {data.variables.map((variable, index) => (
+                                        {(data.variables && data.variables.length > 0) && data.variables.map((variable, index) => (
                                             <Badge
                                                 key={index}
                                                 variant="secondary"
                                                 className="cursor-pointer"
-                                                onClick={() => setData('variables', data.variables.filter((_, i) => i !== index))}
+                                                onClick={() => {
+                                                    const currentVariables = data.variables || [];
+                                                    setData('variables', currentVariables.filter((_, i) => i !== index));
+                                                }}
                                             >
                                                 {`{{${variable}}}`} ×
                                             </Badge>

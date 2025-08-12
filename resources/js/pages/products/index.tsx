@@ -36,43 +36,69 @@ interface Props {
 }
 
 export default function ProductsIndex({ products, filters, categories, brands }: Props) {
+
     const [localFilters, setLocalFilters] = useState({
         search: filters.search || '',
-        category: filters.category || '',
-        status: filters.status || '',
-        brand: filters.brand || '',
+        category: filters.category || 'all',
+        status: filters.status || 'all',
+        brand: filters.brand || 'all',
         price_min: filters.price_min || '',
         price_max: filters.price_max || '',
         stock_min: filters.stock_min || '',
         stock_max: filters.stock_max || '',
     });
 
-    // Filter products locally for better UX
-    const filteredProducts = useMemo(() => {
-        return products.data.filter(product => {
-            const matchesSearch = !localFilters.search || 
-                product.name.toLowerCase().includes(localFilters.search.toLowerCase()) ||
-                product.sku.toLowerCase().includes(localFilters.search.toLowerCase()) ||
-                (product.description && product.description.toLowerCase().includes(localFilters.search.toLowerCase()));
+            // Filter products locally for better UX
+        const filteredProducts = useMemo(() => {
+            if (!products.data || products.data.length === 0) {
+                return [];
+            }
             
-            const matchesCategory = !localFilters.category || product.category === localFilters.category;
-            const matchesStatus = !localFilters.status || 
-                (localFilters.status === 'active' && product.is_active) ||
-                (localFilters.status === 'inactive' && !product.is_active);
-            const matchesBrand = !localFilters.brand || product.brand === localFilters.brand;
+            // Fallback: if no filters are active, show all products
+            const hasActiveFilters = localFilters.search || 
+                localFilters.category !== 'all' || 
+                localFilters.status !== 'all' || 
+                localFilters.brand !== 'all' ||
+                localFilters.price_min || 
+                localFilters.price_max || 
+                localFilters.stock_min || 
+                localFilters.stock_max;
             
-            const price = parseFloat(product.price);
-            const matchesPriceMin = !localFilters.price_min || price >= parseFloat(localFilters.price_min);
-            const matchesPriceMax = !localFilters.price_max || price <= parseFloat(localFilters.price_max);
+            if (!hasActiveFilters) {
+                return products.data;
+            }
             
-            const stock = product.stock;
-            const matchesStockMin = !localFilters.stock_min || stock >= parseInt(localFilters.stock_min);
-            const matchesStockMax = !localFilters.stock_max || stock <= parseInt(localFilters.stock_max);
+            const filtered = products.data.filter(product => {
+                const matchesSearch = !localFilters.search || 
+                    product.name.toLowerCase().includes(localFilters.search.toLowerCase()) ||
+                    product.sku.toLowerCase().includes(localFilters.search.toLowerCase()) ||
+                    (product.description && product.description.toLowerCase().includes(localFilters.search.toLowerCase()));
+                
+                // Fix category filtering - 'all' means show all categories
+                const matchesCategory = localFilters.category === 'all' || !localFilters.category || product.category === localFilters.category;
+                
+                // Fix status filtering - 'all' means show all statuses
+                const matchesStatus = localFilters.status === 'all' || !localFilters.status || 
+                    (localFilters.status === 'active' && product.is_active) ||
+                    (localFilters.status === 'inactive' && !product.is_active);
+                
+                // Fix brand filtering - 'all' means show all brands
+                const matchesBrand = localFilters.brand === 'all' || !localFilters.brand || product.brand === localFilters.brand;
+                
+                const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
+                const matchesPriceMin = !localFilters.price_min || price >= parseFloat(localFilters.price_min || '0');
+                const matchesPriceMax = !localFilters.price_max || price <= parseFloat(localFilters.price_max || '999999');
+                
+                const stock = typeof product.stock === 'string' ? parseInt(product.stock) : product.stock;
+                const matchesStockMin = !localFilters.stock_min || stock >= parseInt(localFilters.stock_min || '0');
+                const matchesStockMax = !localFilters.stock_max || stock <= parseInt(localFilters.stock_max || '999999');
+                
+                return matchesSearch && matchesCategory && matchesStatus && matchesBrand && 
+                       matchesPriceMin && matchesPriceMax && matchesStockMin && matchesStockMax;
+            });
             
-            return matchesSearch && matchesCategory && matchesStatus && matchesBrand && 
-                   matchesPriceMin && matchesPriceMax && matchesStockMin && matchesStockMax;
-        });
-    }, [products.data, localFilters]);
+            return filtered;
+        }, [products.data, localFilters]);
 
     const handleFilterChange = (key: string, value: string) => {
         setLocalFilters(prev => ({ ...prev, [key]: value }));
@@ -81,9 +107,9 @@ export default function ProductsIndex({ products, filters, categories, brands }:
     const clearFilters = () => {
         setLocalFilters({
             search: '',
-            category: '',
-            status: '',
-            brand: '',
+            category: 'all',
+            status: 'all',
+            brand: 'all',
             price_min: '',
             price_max: '',
             stock_min: '',
@@ -146,12 +172,12 @@ export default function ProductsIndex({ products, filters, categories, brands }:
                             {/* Category */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Category</label>
-                                <Select value={localFilters.category} onValueChange={(value) => handleFilterChange('category', value)}>
+                                <Select value={localFilters.category || "all"} onValueChange={(value) => handleFilterChange('category', value === "all" ? "" : value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="All categories" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All categories</SelectItem>
+                                        <SelectItem value="all">All categories</SelectItem>
                                         {categories.map((category) => (
                                             <SelectItem key={category} value={category}>
                                                 {category}
@@ -164,12 +190,12 @@ export default function ProductsIndex({ products, filters, categories, brands }:
                             {/* Brand */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Brand</label>
-                                <Select value={localFilters.brand} onValueChange={(value) => handleFilterChange('brand', value)}>
+                                <Select value={localFilters.brand || "all"} onValueChange={(value) => handleFilterChange('brand', value === "all" ? "" : value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="All brands" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All brands</SelectItem>
+                                        <SelectItem value="all">All brands</SelectItem>
                                         {brands.map((brand) => (
                                             <SelectItem key={brand} value={brand}>
                                                 {brand}
@@ -182,12 +208,12 @@ export default function ProductsIndex({ products, filters, categories, brands }:
                             {/* Status */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Status</label>
-                                <Select value={localFilters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+                                <Select value={localFilters.status || "all"} onValueChange={(value) => handleFilterChange('status', value === "all" ? "" : value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="All statuses" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All statuses</SelectItem>
+                                        <SelectItem value="all">All statuses</SelectItem>
                                         <SelectItem value="active">Active</SelectItem>
                                         <SelectItem value="inactive">Inactive</SelectItem>
                                     </SelectContent>
